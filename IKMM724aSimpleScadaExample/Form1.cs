@@ -1,30 +1,31 @@
+using IKMM724aSimpleScadaExample.Entities;
+
 namespace IKMM724aSimpleScadaExample
 {
     public partial class Form1 : Form
     {
-        int Capacity1, Capacity2;
-        bool valve1closed, valve2closed;
-        bool valve1released, valve2released;
+        Tank tank1, tank2;
         bool runAll, releaseAll;
 
         public Form1()
         {
             InitializeComponent();
+            tank1 = new Tank(progressBar_Tank1, tank1_Value, bValveTank1, tClock1);
+            tank2 = new Tank(progressBar_Tank2, tank2_Value, bValveTank2, tClock2);
         }
 
         private void Form1_Load()
         {
-            valve1closed = false;
-            valve2closed = false;
+            InitializeTanks();
+            tank1 = new Tank(progressBar_Tank1, tank1_Value, bValveTank1, tClock1);
+            tank2 = new Tank(progressBar_Tank2, tank2_Value, bValveTank2, tClock2);
+        }
 
-            valve1released = false;
-            valve2released = false;
 
+        private void InitializeTanks()
+        {
             progressBar_Tank1.Value = 0;
             progressBar_Tank2.Value = 0;
-
-            Capacity1 = 0;
-            Capacity2 = 0;
 
             tank1_Value.Text = "0%";
             tank2_Value.Text = "0%";
@@ -35,15 +36,9 @@ namespace IKMM724aSimpleScadaExample
             Environment.Exit(0);
         }
 
-        private void playSound()
+        private void PlaySound(string soundFile)
         {
-            var simpleSound = new System.Media.SoundPlayer(Environment.CurrentDirectory + "\\wavlibrary.wav");
-            simpleSound.Play();
-        }
-
-        private void playSoundFull()
-        {
-            var simpleSound = new System.Media.SoundPlayer(Environment.CurrentDirectory + "\\full.wav");
+            var simpleSound = new System.Media.SoundPlayer(Environment.CurrentDirectory + soundFile);
             simpleSound.Play();
         }
 
@@ -51,13 +46,13 @@ namespace IKMM724aSimpleScadaExample
         {
             releaseAll = !releaseAll;
 
-                bReleaseAll.BackgroundImage = Properties.Resources.releaseall;
-                bToggle.BackgroundImage = Properties.Resources.offAll;
-                bReleaseTank1.PerformClick();
-                bValveTank1.BackgroundImage = Properties.Resources.closed;
-                bReleaseTank2.PerformClick();
-                bValveTank2.BackgroundImage = Properties.Resources.closed;
-            
+            bReleaseAll.BackgroundImage = Properties.Resources.releaseall;
+            bToggle.BackgroundImage = Properties.Resources.offAll;
+            bReleaseTank1.PerformClick();
+            bValveTank1.BackgroundImage = Properties.Resources.closed;
+            bReleaseTank2.PerformClick();
+            bValveTank2.BackgroundImage = Properties.Resources.closed;
+
         }
 
         private void bToggle_Click(object sender, EventArgs e)
@@ -66,9 +61,6 @@ namespace IKMM724aSimpleScadaExample
 
             if (runAll)
             {
-                valve1closed = false;
-                valve2closed = false;
-
                 bToggle.BackgroundImage = Properties.Resources.onAll;
                 bValveTank1.PerformClick();
                 bValveTank2.PerformClick();
@@ -87,17 +79,12 @@ namespace IKMM724aSimpleScadaExample
 
         private void bReleaseTank1_Click(object sender, EventArgs e)
         {
-            valve1closed = false;
-            bValveTank1.BackgroundImage = Properties.Resources.closed;
-
-            valve1released = !valve1released;
-
-            if (!valve1released)
+            if (!tank1.IsValveClosed)
             {
-                tClock1.Stop();
-                playSound();
+                tank1.CloseValve();
             }
-            else
+
+            if (tank1.Capacity > 0)
             {
                 tClock1.Start();
             }
@@ -105,72 +92,24 @@ namespace IKMM724aSimpleScadaExample
 
         private void bValveTank1_Click(object sender, EventArgs e)
         {
-            valve1released = false;
-
-            valve1closed = !valve1closed;
-
-            if (valve1closed)
-            {
-                bValveTank1.BackgroundImage = Properties.Resources.open;
-                tClock1.Start();
-            }
-            else
-            {
-                bValveTank1.BackgroundImage = Properties.Resources.closed;
-                tClock1.Stop();
-            }
-
+            tank1.ToggleValve();
         }
 
         private void tClock1_Tick(object sender, EventArgs e)
         {
-            if (valve1closed)
+            if (!tank1.IsValveClosed)
             {
-                if (Capacity1 < 100)
-                {
-                    progressBar_Tank1.Increment(10);
-                    tank1_Value.Text = (Capacity1 + 10).ToString() + "%";
-                    tank1_Value.Refresh();
-
-                    Capacity1 += 10;
-                    System.Threading.Thread.Sleep(100);
-                }
-                else
-                {
-                    tClock1.Stop();
-                }
+                tank1.FillTank();
             }
             else
             {
-                if (Capacity1 <= 100)
-                {
-                    if (progressBar_Tank1.Value == 0)
-                    {
-                        progressBar_Tank1.Value = 0;
-                    }
-                    else
-                    {
-                        progressBar_Tank1.Value -= 10;
+                tank1.DrainTank();
 
-                        tank1_Value.Text = (Capacity1 - 10).ToString() + "%";
-                        tank1_Value.Refresh();
-                        Capacity1 -= 10;
-                        System.Threading.Thread.Sleep(0);
-                    }
-                }
-                if (Capacity1 == 0)
+                if (tank1.Capacity == 0)
                 {
-                    progressBar_Tank1.Value = 0;
-
                     tClock1.Stop();
-                    bValveTank1.BackgroundImage = Properties.Resources.closed;
-                    playSound();
+                    PlaySound(SoundConstants.SoundFilePath);
                 }
-            }
-
-            if (progressBar_Tank1.Value > 99)
-            {
-                bValveTank1.BackgroundImage = Properties.Resources.open;
             }
         }
 
@@ -180,6 +119,42 @@ namespace IKMM724aSimpleScadaExample
             bToggle.BackgroundImage = Properties.Resources.offAll;
             bValveTank1.BackgroundImage = Properties.Resources.closed;
             bValveTank2.BackgroundImage = Properties.Resources.closed;
+        }
+
+        private void bValveTank2_Click(object sender, EventArgs e)
+        {
+            tank2.ToggleValve();
+        }
+
+        private void tClock2_Tick(object sender, EventArgs e)
+        {
+            if (!tank2.IsValveClosed)
+            {
+                tank2.FillTank();
+            }
+            else
+            {
+                tank2.DrainTank();
+
+                if (tank2.Capacity == 0)
+                {
+                    tClock2.Stop();
+                    PlaySound(SoundConstants.SoundFilePath);
+                }
+            }
+        }
+
+        private void bReleaseTank2_Click(object sender, EventArgs e)
+        {
+            if (!tank2.IsValveClosed)
+            {
+                tank2.CloseValve();
+            }
+
+            if (tank2.Capacity > 0)
+            {
+                tClock2.Start();
+            }
         }
     }
 }

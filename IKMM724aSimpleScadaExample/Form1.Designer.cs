@@ -177,6 +177,7 @@
             bValveTank2.Size = new Size(83, 58);
             bValveTank2.TabIndex = 11;
             bValveTank2.UseVisualStyleBackColor = true;
+            bValveTank2.Click += bValveTank2_Click;
             // 
             // bReleaseTank1
             // 
@@ -198,10 +199,15 @@
             bReleaseTank2.Size = new Size(69, 63);
             bReleaseTank2.TabIndex = 13;
             bReleaseTank2.UseVisualStyleBackColor = true;
+            bReleaseTank2.Click += bReleaseTank2_Click;
             // 
             // tClock1
             // 
             tClock1.Tick += tClock1_Tick;
+            // 
+            // tClock2
+            // 
+            tClock2.Tick += tClock2_Tick;
             // 
             // progressBar_Tank1
             // 
