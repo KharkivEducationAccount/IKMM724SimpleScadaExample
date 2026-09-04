@@ -108,7 +108,6 @@ namespace IKMM724aSimpleScadaExample
                 if (tank1.Capacity == 0)
                 {
                     tClock1.Stop();
-                    PlaySound(SoundConstants.SoundFilePath);
                 }
             }
         }
@@ -139,7 +138,6 @@ namespace IKMM724aSimpleScadaExample
                 if (tank2.Capacity == 0)
                 {
                     tClock2.Stop();
-                    PlaySound(SoundConstants.SoundFilePath);
                 }
             }
         }
